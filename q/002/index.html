@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pages sinovi</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+         margin: 0; background: #f6f6f4; color: #1b2a49; }
+  main { max-width: 420px; margin: 0 auto; padding: 32px 20px; }
+  h1 { font-size: 19px; font-weight: 500; margin: 0 0 4px; }
+  .id { font-family: ui-monospace, monospace; color: #5a6478;
+        font-size: 13px; margin: 0 0 28px; }
+  a.btn { display: block; text-align: center; padding: 12px 16px;
+          border-radius: 8px; border: 1px solid #c3c8d4; background: #fff;
+          color: #1b2a49; text-decoration: none; font-size: 14px;
+          margin-bottom: 10px; }
+  a.btn.primary { background: #1b2a49; color: #fff; border-color: #1b2a49; }
+  .hint { font-size: 13px; color: #8a90a0; margin-top: 8px; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pages sinovi</h1>
+  <p class="id">ID 002</p>
+  <a class="btn primary" href="../../pdf/pages-sinovi-002.pdf">Hujjatni ochish</a>
+  <a class="btn" href="../../pdf/pages-sinovi-002.pdf" download>Yuklab olish</a>
+  <p class="hint">Hujjat avtomatik ochilmoqda...</p>
+</main>
+<script>
+  fetch('/.netlify/functions/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: '002' }),
+    keepalive: true,
+  }).catch(() => {});
+  // Mobil brauzerlar PDF'ni iframe ichida ko'rsatmaydi (faqat "Ochish"
+  // tugmasi bilan placeholder chiqaradi) -- shuning uchun faylga
+  // to'g'ridan-to'g'ri o'tamiz, brauzer o'zining PDF ko'ruvchisini ochadi.
+  //
+  // Havola NISBIY ('../../pdf/...') -- shu tufayli sahifa GitHub Pages'da
+  // (ildizda yoki repo nomi bilan), Render'da va Netlify'da bir xil
+  // ishlaydi, hech qanday domen kodga yozilmaydi.
+  setTimeout(function () {
+    window.location.replace('../../pdf/pages-sinovi-002.pdf');
+  }, 400);
+</script>
+</body>
+</html>

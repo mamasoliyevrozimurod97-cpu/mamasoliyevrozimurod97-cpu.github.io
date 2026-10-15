@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Махаллийлаштириш_каталоги 06.12.24</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+         margin: 0; background: #f6f6f4; color: #1b2a49; }
+  main { max-width: 900px; margin: 0 auto; padding: 20px 16px 32px; }
+  h1 { font-size: 18px; font-weight: 500; margin: 0 0 4px; }
+  .id { font-family: ui-monospace, monospace; color: #5a6478;
+        font-size: 13px; margin: 0 0 16px; }
+  .pg { background: #fff; border: 1px solid #dfe2e8; border-radius: 8px;
+        margin-bottom: 12px; overflow: hidden; }
+  .pg canvas { display: block; width: 100%; height: auto; }
+  .state { font-size: 14px; color: #5a6478; text-align: center;
+           padding: 28px 16px; background: #fff; border-radius: 8px;
+           border: 1px solid #dfe2e8; }
+  .state.err { color: #8c1d18; background: #fdecea; border-color: #f7cec9; }
+  a.btn { display: block; text-align: center; padding: 13px 16px;
+          border-radius: 8px; border: 1px solid #c3c8d4; background: #fff;
+          color: #1b2a49; text-decoration: none; font-size: 14px;
+          margin-top: 12px; }
+  a.btn.primary { background: #1b2a49; color: #fff; border-color: #1b2a49; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Махаллийлаштириш_каталоги 06.12.24</h1>
+  <p class="id">ID 003</p>
+
+  <div id="viewer"></div>
+  <p id="loading" class="state">Hujjat yuklanmoqda...</p>
+  <p id="failed" class="state err" hidden>
+    Hujjatni sahifada ko'rsatib bo'lmadi. Pastdagi tugma orqali ochishingiz mumkin.
+  </p>
+
+  <a id="open" class="btn primary" href="../../pdf/maxalliylashtirish-katalogi-06-12-24-003.pdf" hidden>Hujjatni ochish</a>
+  <a class="btn" href="../../pdf/maxalliylashtirish-katalogi-06-12-24-003.pdf" download>Yuklab olish</a>
+</main>
+
+<script type="module">
+  const PDF_URL = '../../pdf/maxalliylashtirish-katalogi-06-12-24-003.pdf';
+  const viewer = document.getElementById('viewer');
+  const loading = document.getElementById('loading');
+
+  function failed() {
+    loading.hidden = true;
+    document.getElementById('failed').hidden = false;
+    document.getElementById('open').hidden = false;
+  }
+
+  (async function () {
+    try {
+      // Nisbiy manzil: sahifa GitHub Pages'da (ildizda yoki repo nomi
+      // ostida) yoki shu dasturning o'zida bo'lishidan qat'i nazar ishlaydi.
+      const pdfjs = await import('../../lib/pdf.min.mjs');
+      pdfjs.GlobalWorkerOptions.workerSrc = '../../lib/pdf.worker.min.mjs';
+
+      const pdf = await pdfjs.getDocument(PDF_URL).promise;
+      if (pdf.numPages === 0) return failed();
+      const cssWidth = Math.min(viewer.clientWidth || 360, 900);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      // Katta hujjatda (100+ sahifa) hammasini birdan chizish telefon
+      // xotirasini to'ldirib qo'yadi. Shuning uchun har sahifa uchun bo'sh
+      // joy ajratiladi, sahifa ekranga yaqinlashganda chiziladi va ancha
+      // uzoqlashganda xotiradan bo'shatiladi.
+      const first = await pdf.getPage(1);
+      const firstBase = first.getViewport({ scale: 1 });
+      let shown = false;
+
+      async function render(holder) {
+        if (holder.dataset.state) return;
+        holder.dataset.state = 'busy';
+        try {
+          const page = await pdf.getPage(Number(holder.dataset.n));
+          const base = page.getViewport({ scale: 1 });
+          const viewport = page.getViewport({ scale: (cssWidth / base.width) * dpr });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.floor(viewport.width);
+          canvas.height = Math.floor(viewport.height);
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+          holder.style.aspectRatio = base.width + ' / ' + base.height;
+          holder.replaceChildren(canvas);
+          holder.dataset.state = 'done';
+          if (!shown) { shown = true; loading.hidden = true; }
+        } catch (e) {
+          holder.dataset.state = '';
+          if (!shown) failed();
+        }
+      }
+
+      function release(holder) {
+        if (holder.dataset.state !== 'done') return;
+        holder.replaceChildren();
+        holder.dataset.state = '';
+      }
+
+      const near = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) render(e.target);
+      }, { rootMargin: '900px 0px' });
+      const far = new IntersectionObserver((entries) => {
+        for (const e of entries) if (!e.isIntersecting) release(e.target);
+      }, { rootMargin: '3000px 0px' });
+
+      for (let n = 1; n <= pdf.numPages; n++) {
+        const holder = document.createElement('div');
+        holder.className = 'pg';
+        holder.dataset.n = String(n);
+        holder.style.aspectRatio = firstBase.width + ' / ' + firstBase.height;
+        viewer.appendChild(holder);
+        near.observe(holder);
+        far.observe(holder);
+      }
+    } catch (e) {
+      failed();
+    }
+  })();
+</script>
+</body>
+</html>
